@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import Popunder from './components/Popunder';
 import PanicButton from './components/PanicButton';
 import Taskbar from './components/Taskbar';
+import OSWindow from './components/OSWindow';
 import AdminPanelWindow from './components/AdminPanelWindow';
 import PatchLogs from './components/PatchLogs';
 import AdminAnnouncement from './components/AdminAnnouncement';
@@ -344,7 +345,13 @@ const ThemedApp = memo(() => {
         <SiteControlNotice title="Games are temporarily disabled" detail="A DOGEUB administrator has closed the Games section. Please try again later." />
       ) : siteStatus.browsingDisabled && ['/materials', '/search', '/recommended'].includes(location.pathname) ? (
         <SiteControlNotice title="Browsing tools are temporarily disabled" detail="A DOGEUB administrator has paused browsing tools inside DOGEUB. Other browser apps on your device are not affected." />
-      ) : <Routing pages={pages} />}
+      ) : location.pathname === '/' ? (
+        <Routing pages={pages} />
+      ) : (
+        <OSWindow>
+          <Routing pages={pages} />
+        </OSWindow>
+      )}
       {siteStatus.serverMuted && !siteStatus.banned && <div role="status" className="fixed bottom-4 left-1/2 z-[2147482000] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-amber-200/20 bg-slate-950/95 px-4 py-3 text-center text-sm text-amber-100 shadow-2xl">Server-wide mute is active. Sending messages is temporarily disabled for non-admins.</div>}
       <AdminAnnouncement />
       <PortalTransitions />

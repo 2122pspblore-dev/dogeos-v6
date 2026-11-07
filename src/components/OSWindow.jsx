@@ -168,6 +168,7 @@ export default function OSWindow({ children, titleOverride, zIndex = 200, initia
     if (event.button !== 0 || maximized) return;
     event.preventDefault();
     event.stopPropagation();
+    onFocus?.();
     resizeRef.current = {
       pointerId: event.pointerId,
       direction,

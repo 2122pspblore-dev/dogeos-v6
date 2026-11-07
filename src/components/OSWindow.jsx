@@ -44,19 +44,33 @@ function defaultBounds() {
 const MIN_WIDTH = 360;
 const MIN_HEIGHT = 260;
 
-export default function OSWindow({ children }) {
+export default function OSWindow({ children, titleOverride, zIndex = 200, initialOffset = 0, minimized: minimizedProp, onMinimizedChange, onClose, onFocus, showRestoreButton = true }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [minimized, setMinimized] = useState(false);
+  const [localMinimized, setLocalMinimized] = useState(false);
+  const minimized = typeof minimizedProp === 'boolean' ? minimizedProp : localMinimized;
+  const setMinimized = (next) => {
+    if (typeof minimizedProp !== 'boolean') setLocalMinimized(next);
+    onMinimizedChange?.(next);
+  };
   const [maximized, setMaximized] = useState(false);
   const [snapOpen, setSnapOpen] = useState(false);
   const [layout, setLayout] = useState(readLayout);
-  const [position, setPosition] = useState(defaultBounds);
+  const [position, setPosition] = useState(() => {
+    const bounds = defaultBounds();
+    if (window.innerWidth <= 700) return bounds;
+    const offset = Math.max(0, Number(initialOffset) || 0) % 4;
+    return {
+      ...bounds,
+      x: Math.min(window.innerWidth - bounds.width, bounds.x + offset * 26),
+      y: Math.min(window.innerHeight - bounds.height - 58, bounds.y + offset * 24),
+    };
+  });
   const [dragging, setDragging] = useState(false);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
   const restoreBounds = useRef(null);
-  const title = titleFor(location.pathname);
+  const title = titleOverride || titleFor(location.pathname);
 
   useEffect(() => {
     const sync = () => {
@@ -217,12 +231,13 @@ export default function OSWindow({ children }) {
   };
 
   if (minimized) {
+    if (!showRestoreButton) return null;
     return (
       <button
         type="button"
         className="dogeub-window-restore"
         data-window-restore="true"
-        onClick={() => setMinimized(false)}
+        onClick={() => { setMinimized(false); onFocus?.(); }}
         title={'Restore ' + title}
         aria-label={'Restore ' + title}
       >
@@ -236,9 +251,10 @@ export default function OSWindow({ children }) {
 
   return (
     <section
+      onPointerDown={onFocus}
       className={'dogeub-os-window' + (maximized ? ' is-maximized' : '') + (dragging ? ' is-dragging' : '')}
       data-dogeub-os-window="true"
-      style={{ left: position.x, top: position.y, width: position.width, height: position.height }}
+      style={{ left: position.x, top: position.y, width: position.width, height: position.height, zIndex }}
       onPointerMove={movePointer}
       onPointerUp={endPointer}
       onPointerCancel={endPointer}
@@ -281,7 +297,7 @@ export default function OSWindow({ children }) {
           <span className="dogeub-window-control-divider" aria-hidden="true" />
           <button className="dogeub-window-control minimize" type="button" aria-label="Minimize window" title="Minimize" onClick={() => setMinimized(true)}><Minus size={15} /></button>
           <button className="dogeub-window-control maximize" type="button" aria-label={maximized ? 'Restore window size' : 'Maximize window'} title={maximized ? 'Restore' : 'Maximize'} onClick={toggleMaximize}><Maximize2 size={14} /></button>
-          <button className="dogeub-window-control close" type="button" aria-label="Close window" title="Close" onClick={() => navigate('/')}><X size={15} /></button>
+          <button className="dogeub-window-control close" type="button" aria-label="Close window" title="Close" onClick={() => (onClose ? onClose() : navigate('/'))}><X size={15} /></button>
         </div>
       </header>
       <div className="dogeub-window-content">{children}</div>

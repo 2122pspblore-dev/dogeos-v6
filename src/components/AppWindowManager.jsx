@@ -117,6 +117,7 @@ export default function AppWindowManager() {
             src={item.src}
             className="dogeub-app-window-frame"
             loading="eager"
+            onFocus={() => focusWindow(item.id)}
             allow="clipboard-read; clipboard-write; fullscreen"
           />
         </OSWindow>

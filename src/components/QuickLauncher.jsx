@@ -21,22 +21,26 @@ import {
   X,
 } from 'lucide-react';
 
+const openAppWindow = (path, state, title) => {
+  window.dispatchEvent(new CustomEvent('dogeub-open-window', { detail: { path, state, title } }));
+};
+
 const ITEMS = [
   { name: 'Home', detail: 'Return to the DOGEUB dashboard', icon: Home, run: (navigate) => navigate('/') },
-  { name: 'Search the web', detail: 'Search the web or open a URL', icon: Globe, run: (navigate, query) => navigate('/search', { state: { url: /^https?:\/\//i.test(query) ? query : 'https://www.bing.com/search?q=' + encodeURIComponent(query || '') } }) },
-  { name: 'Recommended', detail: 'Discover recommended sites and tools', icon: Compass, run: (navigate) => navigate('/recommended') },
-  { name: 'Doge Messages', detail: 'Global chat and private messages', icon: MessagesSquare, run: (navigate) => navigate('/messages') },
-  { name: 'Remote Desktop', detail: 'Screen sharing and device connection setup', icon: Monitor, run: (navigate) => navigate('/remote-desktop') },
-  { name: 'Collaboration Center', detail: 'Project workspaces, notes, and team links', icon: UsersRound, run: (navigate) => navigate('/collaboration-center') },
+  { name: 'Search the web', detail: 'Search the web or open a URL', icon: Globe, run: (_navigate, query) => openAppWindow('/search', { url: /^https?:\/\//i.test(query) ? query : 'https://www.bing.com/search?q=' + encodeURIComponent(query || '') }, 'Browser') },
+  { name: 'Recommended', detail: 'Discover recommended sites and tools', icon: Compass, run: () => openAppWindow('/recommended', null, 'Recommended') },
+  { name: 'Doge Messages', detail: 'Global chat and private messages', icon: MessagesSquare, run: () => openAppWindow('/messages', null, 'Doge Messages') },
+  { name: 'Remote Desktop', detail: 'Screen sharing and device connection setup', icon: Monitor, run: () => openAppWindow('/remote-desktop', null, 'Remote Desktop') },
+  { name: 'Collaboration Center', detail: 'Project workspaces, notes, and team links', icon: UsersRound, run: () => openAppWindow('/collaboration-center', null, 'Collaboration Center') },
   { name: 'Admin Panel', detail: 'Open the DOGEUB administrator control center', icon: ShieldCheck, run: () => window.dispatchEvent(new Event('dogeub-open-admin-panel')) },
-  { name: 'Apps & games', detail: 'Browse the app catalog', icon: AppWindow, run: (navigate) => navigate('/materials') },
-  { name: 'DOGEUB Writer', detail: 'Create or import Word documents', icon: FileText, run: (navigate) => navigate('/office/word') },
-  { name: 'DOGEUB Sheets', detail: 'Create or import spreadsheets', icon: Table2, run: (navigate) => navigate('/office/sheet') },
-  { name: 'DOGEUB Slides', detail: 'Create or import presentations', icon: Presentation, run: (navigate) => navigate('/office/slides') },
-  { name: 'Most played games', detail: 'Open the game catalog', icon: Gamepad2, run: (navigate) => navigate('/docs') },
+  { name: 'Apps & games', detail: 'Browse the app catalog', icon: AppWindow, run: () => openAppWindow('/materials', null, 'Apps') },
+  { name: 'DOGEUB Writer', detail: 'Create or import Word documents', icon: FileText, run: () => openAppWindow('/office/word', null, 'DOGEUB Writer') },
+  { name: 'DOGEUB Sheets', detail: 'Create or import spreadsheets', icon: Table2, run: () => openAppWindow('/office/sheet', null, 'DOGEUB Sheets') },
+  { name: 'DOGEUB Slides', detail: 'Create or import presentations', icon: Presentation, run: () => openAppWindow('/office/slides', null, 'DOGEUB Slides') },
+  { name: 'Most played games', detail: 'Open the game catalog', icon: Gamepad2, run: () => openAppWindow('/docs', null, 'Games & Resources') },
   { name: 'Most visited sites', detail: 'Return to the dashboard activity widgets', icon: Home, run: (navigate) => navigate('/') },
-  { name: 'Settings', detail: 'Customize DOGEUB', icon: Settings, run: (navigate) => navigate('/settings') },
-  { name: 'Shortcuts', detail: 'View keyboard shortcuts', icon: Keyboard, run: (navigate) => navigate('/shortcuts') },
+  { name: 'Settings', detail: 'Customize DOGEUB', icon: Settings, run: () => openAppWindow('/settings', null, 'Settings') },
+  { name: 'Shortcuts', detail: 'View keyboard shortcuts', icon: Keyboard, run: () => openAppWindow('/shortcuts', null, 'Keyboard Shortcuts') },
 ];
 
 const wrapIndex = (index, length) => ((index % length) + length) % length;

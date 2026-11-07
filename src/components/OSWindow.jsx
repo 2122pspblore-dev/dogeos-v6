@@ -79,6 +79,24 @@ export default function OSWindow({ children }) {
     setSnapOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const keepWindowInBounds = () => {
+      if (maximized) return;
+      setPosition((current) => {
+        const width = Math.min(current.width, Math.max(240, window.innerWidth));
+        const height = Math.min(current.height, Math.max(220, window.innerHeight - 76));
+        return {
+          x: Math.max(0, Math.min(current.x, window.innerWidth - width)),
+          y: Math.max(0, Math.min(current.y, window.innerHeight - height - 58)),
+          width,
+          height,
+        };
+      });
+    };
+    window.addEventListener('resize', keepWindowInBounds);
+    return () => window.removeEventListener('resize', keepWindowInBounds);
+  }, [maximized]);
+
   const snap = (kind) => {
     const width = window.innerWidth;
     const height = Math.max(260, window.innerHeight - 70);
@@ -244,12 +262,10 @@ export default function OSWindow({ children }) {
         }}
         aria-label={title + ' window title bar'}
       >
-        <div className="dogeub-window-traffic" data-window-no-drag="true">
-          <button className="dogeub-window-control close" type="button" aria-label="Close window" title="Close" onClick={() => navigate('/')}><X size={8} /></button>
-          <button className="dogeub-window-control minimize" type="button" aria-label="Minimize window" title="Minimize" onClick={() => setMinimized(true)}><Minus size={8} /></button>
-          <button className="dogeub-window-control maximize" type="button" aria-label={maximized ? 'Restore window size' : 'Maximize window'} title={maximized ? 'Restore' : 'Maximize'} onClick={toggleMaximize}><Maximize2 size={8} /></button>
+        <div className="dogeub-window-title-group">
+          <Monitor size={15} aria-hidden="true" />
+          <span className="dogeub-window-title">{title}</span>
         </div>
-        <span className="dogeub-window-title">{title}</span>
         <div className="dogeub-window-actions" data-window-no-drag="true">
           <button type="button" title={layout === 'taskbar' ? 'Switch to desktop app icons' : 'Switch to taskbar app layout'} aria-label="Toggle app layout" onClick={toggleLayout}><Monitor size={14} /></button>
           <div className="dogeub-snap-wrap">
@@ -262,6 +278,10 @@ export default function OSWindow({ children }) {
               </div>
             )}
           </div>
+          <span className="dogeub-window-control-divider" aria-hidden="true" />
+          <button className="dogeub-window-control minimize" type="button" aria-label="Minimize window" title="Minimize" onClick={() => setMinimized(true)}><Minus size={15} /></button>
+          <button className="dogeub-window-control maximize" type="button" aria-label={maximized ? 'Restore window size' : 'Maximize window'} title={maximized ? 'Restore' : 'Maximize'} onClick={toggleMaximize}><Maximize2 size={14} /></button>
+          <button className="dogeub-window-control close" type="button" aria-label="Close window" title="Close" onClick={() => navigate('/')}><X size={15} /></button>
         </div>
       </header>
       <div className="dogeub-window-content">{children}</div>

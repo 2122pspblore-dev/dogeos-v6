@@ -6,6 +6,10 @@ import {
   Wifi, WifiOff, Music2, X, Youtube, BookOpen, Grid3X3, Power, ChevronUp, Cpu, LockKeyhole, Sparkles, Smile, FolderOpen, Keyboard, Zap, Command, MessagesSquare, ShieldCheck, Monitor, UsersRound, Compass, Gamepad2, GraduationCap, Wrench, Bell, Layers
 } from 'lucide-react';
 
+function launchAppWindow(path, state, title) {
+  window.dispatchEvent(new CustomEvent('dogeub-open-window', { detail: { path, state, title } }));
+}
+
 const apps = [
   { name: 'Home', description: 'DogeUB homepage', icon: Home, path: '/' },
   { name: 'Browser', description: 'Browse the web', icon: Globe, path: '/search' },
@@ -344,13 +348,16 @@ export default function Taskbar() {
       return;
     }
     if (app.url) {
-      navigate('/search', { state: { url: app.url } });
+      launchAppWindow('/search', { url: app.url }, app.name);
       setStartOpen(false);
       setSearchOpen(false);
       return;
     }
-    if (location.pathname === app.path) window.dispatchEvent(new Event('dogeub-restore-window'));
-    navigate(app.path);
+    if (app.path === '/') {
+      navigate('/');
+    } else if (app.path) {
+      launchAppWindow(app.path, null, app.name);
+    }
     setStartOpen(false);
     setSearchOpen(false);
   };
@@ -359,14 +366,14 @@ export default function Taskbar() {
     event?.preventDefault?.();
     const value = query.trim();
     if (!value) return;
-    navigate('/search', {
-      state: { url: (value.startsWith('http://') || value.startsWith('https://')) ? value : `https://www.bing.com/search?q=${encodeURIComponent(value)}` },
-    });
+    const url = (value.startsWith('http://') || value.startsWith('https://'))
+      ? value
+      : 'https://www.bing.com/search?q=' + encodeURIComponent(value);
+    launchAppWindow('/search', { url }, 'Browser');
     setQuery('');
     setStartOpen(false);
     setSearchOpen(false);
   };
-
   const submitStartSearch = (event) => {
     event?.preventDefault?.();
     const value = query.trim();
@@ -380,18 +387,17 @@ export default function Taskbar() {
     }
     const settingsTerms = ['privacy', 'cloak', 'customize', 'theme', 'appearance', 'color', 'browsing', 'search engine', 'advanced', 'cache', 'settings', 'preferences'];
     if (settingsTerms.some((keyword) => keyword.includes(term) || term.includes(keyword))) {
-      navigate('/settings');
+      launchAppWindow('/settings', null, 'Settings');
       setQuery('');
       setStartOpen(false);
       setSearchOpen(false);
       return;
     }
-    navigate('/search', { state: { url: `https://www.bing.com/search?q=${encodeURIComponent(value)}` } });
+    launchAppWindow('/search', { url: 'https://www.bing.com/search?q=' + encodeURIComponent(value) }, 'Browser');
     setQuery('');
     setStartOpen(false);
     setSearchOpen(false);
   };
-
   return (
     <>
       <div className="pointer-events-none fixed left-1/2 top-3 z-[11002] flex w-max max-w-[calc(100vw-12px)] -translate-x-1/2 items-center gap-2">
@@ -561,7 +567,7 @@ export default function Taskbar() {
         </div>
       )}
 
-      {appLayout === 'desktop' && (
+      {appLayout === 'desktop' && location.pathname !== '/' && (
         <div className="dogeub-desktop-icons" aria-label="Desktop app shortcuts">
           {apps.filter((app) => app.path && !app.startOnly).map((app) => {
             const Icon = app.icon;

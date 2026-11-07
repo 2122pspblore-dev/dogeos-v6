@@ -3,12 +3,13 @@ import ReactGA from 'react-ga4';
 import Search from './pages/Search';
 import lazyLoad from './lazyWrapper';
 import NotFound from './pages/NotFound';
-import { useEffect, useMemo, memo, useState } from 'react';
+import { useCallback, useEffect, useMemo, memo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Popunder from './components/Popunder';
 import PanicButton from './components/PanicButton';
 import Taskbar from './components/Taskbar';
 import OSWindow from './components/OSWindow';
+import AppWindowManager from './components/AppWindowManager';
 import AdminPanelWindow from './components/AdminPanelWindow';
 import PatchLogs from './components/PatchLogs';
 import AdminAnnouncement from './components/AdminAnnouncement';
@@ -86,7 +87,7 @@ function ShieldBanIcon() {
   return <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m9 9 6 6m0-6-6 6"/></svg>;
 }
 
-function Windows10Startup() {
+function Windows10Startup({ onComplete }) {
   const [visible, setVisible] = useState(() => {
     try { return window.sessionStorage.getItem('dogeub-startup-seen-v1') !== 'true'; }
     catch { return true; }
@@ -98,10 +99,13 @@ function Windows10Startup() {
   };
 
   useEffect(() => {
-    if (!visible) return undefined;
+    if (!visible) {
+      onComplete?.();
+      return undefined;
+    }
     const timeout = window.setTimeout(dismiss, 5000);
     return () => window.clearTimeout(timeout);
-  }, [visible]);
+  }, [visible, onComplete]);
 
   if (!visible) return null;
 
@@ -149,6 +153,9 @@ function useTracking() {
 const ThemedApp = memo(() => {
   const { options, updateOption } = useOptions();
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showDiscontinuedNotice, setShowDiscontinuedNotice] = useState(false);
+  const handleStartupComplete = useCallback(() => setShowDiscontinuedNotice(true), []);
+  const isEmbeddedAppWindow = new URLSearchParams(window.location.search).get('dogeub-window') === '1';
   const location = useLocation();
 
   useEffect(() => {
@@ -161,6 +168,12 @@ const ThemedApp = memo(() => {
       window.removeEventListener('dogeub-lock', lock);
     };
   }, []);
+  useEffect(() => {
+    if (!showDiscontinuedNotice) return undefined;
+    const timeout = window.setTimeout(() => setShowDiscontinuedNotice(false), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [showDiscontinuedNotice]);
+
   const [siteStatus, setSiteStatus] = useState({ gamesDisabled: false, serverMuted: false, browsingDisabled: false, maintenanceMode: false, maintenanceMessage: '', maintenanceAdmin: false, maintenanceAuthenticated: false, banned: false, banReason: '' });
   const popunderEnabled = POPUNDER_ENABLED === 'true';
   const [customBackground, setCustomBackground] = useState(() => {
@@ -316,9 +329,37 @@ const ThemedApp = memo(() => {
     `;
   }, [options.siteTextColor, options.bgDesign, options.bgDesignColor, options.bgColor, customBackground]);
 
+  if (isEmbeddedAppWindow) {
+    const embeddedContent = siteStatus.banned
+      ? <SiteControlNotice title="DOGEUB access disabled" detail={siteStatus.banReason || 'An administrator has disabled access for this DOGEUB account.'} />
+      : siteStatus.maintenanceMode && !siteStatus.maintenanceAdmin && (location.pathname !== '/messages' || siteStatus.maintenanceAuthenticated)
+        ? <SiteControlNotice title="Temporarily unavailable" detail={siteStatus.maintenanceMessage || 'DOGEUB is temporarily unavailable while we perform maintenance.'} />
+        : siteStatus.gamesDisabled && ['/docs', '/docs/r', '/game-library'].includes(location.pathname)
+          ? <SiteControlNotice title="Games are temporarily disabled" detail="A DOGEUB administrator has closed the Games section. Please try again later." />
+          : siteStatus.browsingDisabled && ['/materials', '/search', '/recommended'].includes(location.pathname)
+            ? <SiteControlNotice title="Browsing tools are temporarily disabled" detail="A DOGEUB administrator has paused browsing tools inside DOGEUB." />
+            : <Routing pages={pages} />;
+
+    return (
+      <div className="min-h-full w-full">
+        {embeddedContent}
+        <style>{backgroundStyle}</style>
+      </div>
+    );
+  }
+
   return (
     <>
-      <Windows10Startup />
+      <Windows10Startup onComplete={handleStartupComplete} />
+      {showDiscontinuedNotice && (
+        <div className="pointer-events-none fixed left-1/2 top-16 z-[2147483001] w-[min(92vw,440px)] -translate-x-1/2" role="status" aria-live="polite">
+          <div className="rounded-2xl border border-rose-200/25 bg-slate-950/95 p-4 text-white shadow-[0_20px_70px_rgba(0,0,0,.55)] backdrop-blur-2xl">
+            <div className="mb-2 text-[9px] font-bold uppercase tracking-[0.24em] text-rose-200/80">Project status</div>
+            <h2 className="text-sm font-bold tracking-wide">DOGEUB OS HAS BEEN DISCONTINUED</h2>
+            <p className="mt-1.5 text-xs leading-5 text-white/65">People don't care enough about my dreams. It's a flop.</p>
+          </div>
+        </div>
+      )}
       <PanicButton />
       <PatchLogs />
       {siteStatus.banned ? (
@@ -356,6 +397,7 @@ const ThemedApp = memo(() => {
       <AdminAnnouncement />
       <PortalTransitions />
       <Taskbar />
+      <AppWindowManager />
       <DogeAssistant />
       <AdminPanelWindow />
       <DogeHub />

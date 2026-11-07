@@ -12,6 +12,7 @@ import { useLocation } from 'react-router-dom';
 export default function Loader({ config = {} }) {
   const location = useLocation();
   const { url, ui = true, zoom, alerts = false } = config;
+  const launchUrl = url || new URLSearchParams(window.location.search).get('dogeub-url') || '';
   const { options } = useOptions();
   const tabs = loaderStore((state) => state.tabs);
   const updateUrl = loaderStore((state) => state.updateUrl);
@@ -20,15 +21,15 @@ export default function Loader({ config = {} }) {
   };
 
   useEffect(() => {
-    if (url && tabs.length > 0) {
+    if (launchUrl && tabs.length > 0) {
       //only 1 tab on initial load so tabs[0]
       const tab = tabs[0];
-      const processedUrl = process(url, false, options.prType || 'auto', options.engine || 'https://www.bing.com/search?q=');
+      const processedUrl = process(launchUrl, false, options.prType || 'auto', options.engine || 'https://www.bing.com/search?q=');
       if (processedUrl && tab.url !== processedUrl) {
         updateUrl(tab.id, processedUrl);
       }
     }
-  }, [url, tabs, updateUrl, options.prType]);
+  }, [launchUrl, tabs, updateUrl, options.prType]);
 
   useEffect(() => {
     // The section switcher passes this state when returning to the browser so its tabs survive route changes.

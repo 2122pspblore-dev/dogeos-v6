@@ -51,11 +51,9 @@ const SearchContainer = memo(function SearchContainer({ logo = true, cls, nav = 
 
   const go = (strin) => {
     if (nav) {
-      navigate("/search", {
-        state: {
-          url: strin,
-        }
-      });
+      window.dispatchEvent(new CustomEvent('dogeub-open-window', {
+        detail: { path: '/search', state: { url: strin }, title: 'Browser' },
+      }));
     } else {
       const processedUrl = navigating.process(strin);
       if (processedUrl) {

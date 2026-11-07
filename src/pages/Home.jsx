@@ -1,5 +1,4 @@
 import Nav from '../layouts/Nav';
-import { Link } from 'react-router-dom';
 import Search from '../components/SearchContainer';
 import Footer from '../components/Footer';
 import Widgets from '../components/Widgets';
@@ -28,6 +27,10 @@ const shortcuts = [
   { to: '/dashboard', icon: SlidersHorizontal, title: 'Dashboard Studio', subtitle: 'Make it yours', color: 'text-indigo-200 bg-indigo-300/10' },
 ];
 
+function launchHomeApp(path, title) {
+  window.dispatchEvent(new CustomEvent('dogeub-open-window', { detail: { path, title } }));
+}
+
 const Home = memo(() => {
   return (
     <>
@@ -44,20 +47,20 @@ const Home = memo(() => {
               <h1 id="home-tools-title" className="mt-1 text-xl font-semibold tracking-tight text-white sm:text-2xl">A little of everything, in one place.</h1>
               <p className="mt-1 text-sm text-slate-400">Pick up where you left off or open something new.</p>
             </div>
-            <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">
+            <button type="button" onClick={() => launchHomeApp('/dashboard', 'Dashboard Studio')} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">
               Customize dashboard <ArrowUpRight size={14} aria-hidden="true" />
-            </Link>
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
             {shortcuts.map(({ to, icon, title, subtitle, color }) => (
-              <Link key={to} to={to} className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/[0.09] bg-slate-950/45 p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-200/30 hover:bg-slate-900/75 hover:shadow-lg hover:shadow-cyan-950/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 sm:p-4">
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${color}`}>{createElement(icon, { size: 19, strokeWidth: 1.8, 'aria-hidden': true })}</span>
+              <button key={to} type="button" onClick={() => launchHomeApp(to, title)} className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/[0.09] bg-slate-950/45 p-3.5 text-left transition duration-200 hover:-translate-y-0.5 hover:border-cyan-200/30 hover:bg-slate-900/75 hover:shadow-lg hover:shadow-cyan-950/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">
+                <span className={'grid h-10 w-10 shrink-0 place-items-center rounded-xl ' + color}>{createElement(icon, { size: 19, strokeWidth: 1.8, 'aria-hidden': true })}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-white">{title}</span>
                   <span className="mt-0.5 block truncate text-[11px] text-slate-400">{subtitle}</span>
                 </span>
                 <ArrowUpRight size={14} className="shrink-0 text-white/25 transition group-hover:text-cyan-200" aria-hidden="true" />
-              </Link>
+              </button>
             ))}
           </div>
         </section>

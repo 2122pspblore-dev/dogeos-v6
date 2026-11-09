@@ -87,61 +87,6 @@ function ShieldBanIcon() {
   return <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m9 9 6 6m0-6-6 6"/></svg>;
 }
 
-function Windows10Startup({ onComplete }) {
-  const [visible, setVisible] = useState(() => {
-    try { return window.sessionStorage.getItem('dogeub-startup-seen-v1') !== 'true'; }
-    catch { return true; }
-  });
-
-  const dismiss = () => {
-    try { window.sessionStorage.setItem('dogeub-startup-seen-v1', 'true'); } catch {}
-    setVisible(false);
-  };
-
-  useEffect(() => {
-    if (!visible) {
-      onComplete?.();
-      return undefined;
-    }
-    const timeout = window.setTimeout(dismiss, 5000);
-    return () => window.clearTimeout(timeout);
-  }, [visible, onComplete]);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      role="status"
-      aria-label="Starting DOGEUB. Click or press Escape to skip."
-      onClick={dismiss}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          dismiss();
-        }
-      }}
-      tabIndex={0}
-      className="flex flex-col items-center justify-center text-white cursor-pointer" style={{ position: "fixed", inset: 0, zIndex: 2147483647, backgroundColor: "#000000" }}
-    >
-      <div className="mb-16 flex h-24 w-24 -skew-y-2 flex-col gap-[4px]">
-        <div className="flex flex-1 gap-[3px]">
-          <span className="flex-1 bg-white" />
-          <span className="flex-1 bg-white" />
-        </div>
-        <div className="flex flex-1 gap-[3px]">
-          <span className="flex-1 bg-white" />
-          <span className="flex-1 bg-white" />
-        </div>
-      </div>
-      <div className="mb-3 text-sm font-normal tracking-wide">DOGEUB</div>
-      <div className="mb-3 text-xs text-white/90">Starting Windows</div>
-      <div className="flex h-8 items-center justify-center" aria-hidden="true">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/35 border-t-white" />
-      </div>
-    </div>
-  );
-}
-
 function useTracking() {
   const location = useLocation();
 
@@ -153,8 +98,6 @@ function useTracking() {
 const ThemedApp = memo(() => {
   const { options, updateOption } = useOptions();
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [showDiscontinuedNotice, setShowDiscontinuedNotice] = useState(false);
-  const handleStartupComplete = useCallback(() => setShowDiscontinuedNotice(true), []);
   const isEmbeddedAppWindow = new URLSearchParams(window.location.search).get('dogeub-window') === '1';
   const location = useLocation();
 
@@ -168,11 +111,6 @@ const ThemedApp = memo(() => {
       window.removeEventListener('dogeub-lock', lock);
     };
   }, []);
-  useEffect(() => {
-    if (!showDiscontinuedNotice) return undefined;
-    const timeout = window.setTimeout(() => setShowDiscontinuedNotice(false), 5000);
-    return () => window.clearTimeout(timeout);
-  }, [showDiscontinuedNotice]);
 
   const [siteStatus, setSiteStatus] = useState({ gamesDisabled: false, serverMuted: false, browsingDisabled: false, maintenanceMode: false, maintenanceMessage: '', maintenanceAdmin: false, maintenanceAuthenticated: false, banned: false, banReason: '' });
   const popunderEnabled = POPUNDER_ENABLED === 'true';
@@ -350,16 +288,6 @@ const ThemedApp = memo(() => {
 
   return (
     <>
-      <Windows10Startup onComplete={handleStartupComplete} />
-      {showDiscontinuedNotice && (
-        <div className="pointer-events-none fixed left-1/2 top-16 z-[2147483001] w-[min(92vw,440px)] -translate-x-1/2" role="status" aria-live="polite">
-          <div className="rounded-2xl border border-rose-200/25 bg-slate-950/95 p-4 text-white shadow-[0_20px_70px_rgba(0,0,0,.55)] backdrop-blur-2xl">
-            <div className="mb-2 text-[9px] font-bold uppercase tracking-[0.24em] text-rose-200/80">Project status</div>
-            <h2 className="text-sm font-bold tracking-wide">DOGEUB OS HAS BEEN DISCONTINUED</h2>
-            <p className="mt-1.5 text-xs leading-5 text-white/65">People don't care enough about my dreams. It's a flop.</p>
-          </div>
-        </div>
-      )}
       <PanicButton />
       <PatchLogs />
       {siteStatus.banned ? (
@@ -410,7 +338,6 @@ const ThemedApp = memo(() => {
       {isUnlocked && <NotificationCenter />}
       {isUnlocked && <HoloSpace />}
       <PetBuddy />
-      <LockScreen />
       {popunderEnabled && !adKeyPassed ? <Popunder /> : null}
       <style>{backgroundStyle}</style>
     </>

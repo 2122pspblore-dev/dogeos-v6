@@ -153,7 +153,10 @@ export default {
       return handleDogeAi(request, env);
     }
 
-    if (requestUrl.pathname === "/api" || requestUrl.pathname.startsWith("/api/")) {
+    if (
+      requestUrl.pathname === "/api" || requestUrl.pathname.startsWith("/api/") ||
+      requestUrl.pathname.startsWith("/seal/") || requestUrl.pathname.endsWith("/wisp/")
+    ) {
       let apiOrigin;
       try {
         apiOrigin = new URL(env.API_ORIGIN);

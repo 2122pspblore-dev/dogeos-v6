@@ -30,13 +30,12 @@ export const process = (input, decode = false, _prType, engine = "https://www.bi
 
   const trimmed = String(input || '').trim();
   if (!trimmed) return null;
-  if (/^https?:\\/\\//i.test(trimmed)) return trimmed;
-  if (/^[\\w-]+\\.[\\w.-]+(?::\\d+)?(?:[/?#]|$)/i.test(trimmed) || trimmed.startsWith('localhost')) {
-    return 'https://' + trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if ((trimmed.includes('.') || trimmed.startsWith('localhost')) && !trimmed.includes(' ')) {
+    try { return new URL('https://' + trimmed).href; } catch {}
   }
   return engine + encodeURIComponent(trimmed);
 };
-
 
 export function openEmbed(url) {
   var win = window.open();

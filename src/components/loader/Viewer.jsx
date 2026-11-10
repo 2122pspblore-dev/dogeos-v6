@@ -2,7 +2,8 @@ import clsx from 'clsx';
 import loaderStore from '/src/utils/hooks/loader/useLoaderStore';
 import { useOptions } from '/src/utils/optionsContext';
 import { useRef, useEffect, useState } from 'react';
-import { Loader, WifiOff, RotateCw } from 'lucide-react';
+import { Loader, WifiOff, RotateCw, ExternalLink } from 'lucide-react';
+import { process } from '/src/utils/hooks/loader/utils';
 
 import NewTab from './NewTab';
 
@@ -245,6 +246,18 @@ const Viewer = ({ conf = {} }) => {
                       className="inline-flex items-center gap-2 rounded-xl bg-cyan-100 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-white"
                     >
                       <RotateCw size={15} /> Retry connection
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const destination = process(url, true, options.prType || 'auto', options.engine || undefined);
+                        if (destination && /^https?:\\/\\//i.test(destination)) {
+                          window.open(destination, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/20 px-4 py-2.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-100/10"
+                    >
+                      <ExternalLink size={15} /> Open site directly
                     </button>
                     <button
                       type="button"

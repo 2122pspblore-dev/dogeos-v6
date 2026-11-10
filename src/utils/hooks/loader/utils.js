@@ -1,6 +1,4 @@
 import { mango } from './of.js';
-import whitelist from '/src/data/whitelist.json';
-import appsData from '/src/data/apps.json';
 
 const check = (inp, engine) => {
   const trimmed = inp.trim();
@@ -18,48 +16,25 @@ const check = (inp, engine) => {
   }
 };
 
-const scrwlist = new Set([
-  ...whitelist,
-  ...Object.values(appsData.games || {}).flatMap(cat => 
-    cat.filter(g => g.url && !g.local).map(g => {
-      try { return new URL(g.url.startsWith('http') ? g.url : `https://${g.url}`).hostname.replace(/^www\./, ''); }
-      catch { return null; }
-    }).filter(Boolean)
-  )
-]);
-
-export const process = (input, decode = false, prType, engine = "https://www.bing.com/search?q=") => {
-  const upwefix = '/portal/k12/';
-  const eggowaffle = '/ham/';
-  
-  let prefix;
-
-  switch (prType) {
-    case 'uv':
-      prefix = upwefix;
-      break;
-    case 'scr':
-      prefix = eggowaffle;
-      break;
-    default:
-      const url = check(input, engine);
-      const match = [...scrwlist].some(d => url.includes(d));
-      prefix = match ? eggowaffle : upwefix;
-  }
-
+/**
+ * Resolve an address or search query without sending it through a proxy.
+ * Sites open in a normal browser tab because many websites block iframes.
+ */
+export const process = (input, decode = false, _prType, engine = "https://www.bing.com/search?q=") => {
   if (decode) {
-    const uvPart = input.split(upwefix)[1];
-    const scrPart = input.split(eggowaffle)[1];
-    const decoded = uvPart ? mango.dnc(uvPart) : scrPart ? mango.dnc(scrPart) : input;
-    return decoded.endsWith('/') ? decoded.slice(0, -1) : decoded;
-  } else {
-    const final = check(input, engine);
-    if (!final || final.trim() === '') {
-      return null;
-    }
-    const encoded = prefix === eggowaffle ? mango.enc(final) : mango.enc(final);
-    return `${location.protocol}//${location.host}${prefix}${encoded}`;
+    const prefix = input.includes('/portal/k12/') ? '/portal/k12/' : input.includes('/ham/') ? '/ham/' : null;
+    if (!prefix) return input;
+    const encoded = input.split(prefix)[1];
+    return encoded ? mango.dnc(encoded) : input;
   }
+
+  const trimmed = String(input || '').trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if ((trimmed.includes('.') || trimmed.startsWith('localhost')) && !trimmed.includes(' ')) {
+    try { return new URL('https://' + trimmed).href; } catch {}
+  }
+  return engine + encodeURIComponent(trimmed);
 };
 
 export function openEmbed(url) {

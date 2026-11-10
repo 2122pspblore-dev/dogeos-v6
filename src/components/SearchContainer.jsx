@@ -55,9 +55,9 @@ const SearchContainer = memo(function SearchContainer({ logo = true, cls, nav = 
         detail: { path: '/search', state: { url: strin }, title: 'Browser' },
       }));
     } else {
-      const processedUrl = navigating.process(strin);
-      if (processedUrl) {
-        navigating.go(navigating.id, processedUrl);
+      const destination = navigating.process(strin);
+      if (destination && /^https?:\\/\\//i.test(destination)) {
+        window.open(destination, '_blank', 'noopener,noreferrer');
       }
     }
   }

@@ -251,7 +251,7 @@ const Viewer = ({ conf = {} }) => {
                       type="button"
                       onClick={() => {
                         const destination = process(url, true, options.prType || 'auto', options.engine || undefined);
-                        if (destination && /^https?:\\/\\//i.test(destination)) {
+                        if (destination && /^https?:\/\//i.test(destination)) {
                           window.open(destination, '_blank', 'noopener,noreferrer');
                         }
                       }}

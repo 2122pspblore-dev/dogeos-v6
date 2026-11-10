@@ -33,7 +33,11 @@ async function apiRequest(path, options = {}) {
   });
   let data = {};
   try { data = await response.json(); } catch {}
-  if (!response.ok) throw new Error(data.error || "The Messages service could not complete that request.");
+  if (!response.ok) {
+    const error = new Error(data.error || "The Messages service could not complete that request.");
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -81,6 +85,7 @@ export default function Messages() {
   const [authUsername, setAuthUsername] = useState(readOSUsername);
   const [authPassword, setAuthPassword] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [accountPasswordRequired, setAccountPasswordRequired] = useState(false);
   const [appError, setAppError] = useState("");
   const [notice, setNotice] = useState("");
   const [activeChannel, setActiveChannel] = useState("global");
@@ -192,7 +197,16 @@ export default function Messages() {
           setAppError("Set your username in your DOGEUB OS profile first. Messages will use it automatically.");
         }
       })
-      .catch((error) => { if (alive) setAppError(error.message); })
+      .catch((error) => {
+        if (!alive) return;
+        if (error.status === 409) {
+          setAuthMode("login");
+          setAccountPasswordRequired(true);
+          setAppError("This DOGEUB username already has a protected Messages account. Sign in once to connect it to this OS profile.");
+        } else {
+          setAppError(error.message);
+        }
+      })
       .finally(() => { if (alive) setSessionLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -462,6 +476,7 @@ export default function Messages() {
       seenNotificationIdsRef.current.clear();
       setSession(data.user);
       setAuthPassword("");
+      setAccountPasswordRequired(false);
       setProfileUsername(data.user.username);
       setNotice(authMode === "register" ? "Welcome to DOGEUB Messages. Your OS and Messages usernames now match." : "You're signed in.");
     } catch (error) {
@@ -854,9 +869,15 @@ export default function Messages() {
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-100/20 bg-cyan-100/[.08] text-cyan-100"><MessagesSquare size={22} /></div>
                 <h2 className="text-2xl font-bold">Your DOGEUB account</h2>
                 <p className="mt-2 text-sm leading-6 text-white/55">Messages automatically uses your DOGEUB OS username. No separate Messages password or sign-in screen.</p>
-                {osUsername ? <p className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-cyan-100">Signed in as @{osUsername}</p> : null}
+                {osUsername ? <p className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-cyan-100">DOGEUB OS username: @{osUsername}</p> : null}
                 {appError ? <p role="alert" className="mt-4 rounded-xl border border-rose-300/20 bg-rose-300/[.06] px-3 py-2.5 text-xs leading-5 text-rose-100/90">{appError}</p> : null}
-                <p className="mt-4 text-[11px] leading-5 text-white/35">Your DMs, groups, and profile use this DOGEUB username.</p>
+                {accountPasswordRequired && <form onSubmit={handleAuth} className="mt-4 space-y-3">
+                  <label className="block text-xs font-semibold text-white/65" htmlFor="messages-account-password">Existing Messages account password</label>
+                  <input id="messages-account-password" type="password" autoComplete="current-password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} required minLength={8} maxLength={128} className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm text-white outline-none transition focus:border-cyan-200/50" placeholder="Enter your account password" />
+                  <button type="submit" disabled={authBusy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-100 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60">{authBusy ? <Spinner small /> : <LockKeyhole size={16} />} Connect existing account</button>
+                  <p className="text-[11px] leading-5 text-white/35">You only need to sign in once on this browser. Your messages and account stay protected.</p>
+                </form>}
+                <p className="mt-4 text-[11px] leading-5 text-white/35">Messages uses your DOGEUB OS username. If it already has a password, sign in once to connect the existing account.</p>
               </div>
             </div>
           </div>

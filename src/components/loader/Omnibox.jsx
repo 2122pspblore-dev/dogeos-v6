@@ -135,7 +135,7 @@ const Omnibox = () => {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && activeTab && input.length !== 0) {
               const destination = process(input, false, options.prType || 'auto', options.engine || undefined);
-              if (destination && /^https?:\\/\\//i.test(destination)) {
+              if (destination && (destination.startsWith('http://') || destination.startsWith('https://'))) {
                 window.open(destination, '_blank', 'noopener,noreferrer');
               }
               inputRef.current.blur();

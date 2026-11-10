@@ -84,9 +84,9 @@ const Omnibox = () => {
 
   useEffect(() => {
     if (state?.url && activeTab) {
-      const processedUrl = process(state.url, false, options.prType || 'auto', options.engine || undefined);
-      if (processedUrl) {
-        updateUrl(activeTab.id, processedUrl);
+      const destination = process(state.url, false, options.prType || 'auto', options.engine || undefined);
+      if (destination && (destination.startsWith('http://') || destination.startsWith('https://'))) {
+        window.open(destination, '_blank', 'noopener,noreferrer');
       }
       navigate('.', { replace: true, state: {} });
     }

@@ -3,6 +3,7 @@ import { Bot, Mic, MicOff, Send, X, Sparkles, Settings2, Palette, Moon, Sun, Paw
 import { useNavigate } from 'react-router-dom';
 import { useOptions } from '../utils/optionsContext';
 import { themeConfig, searchConfig } from '../utils/config';
+import DogeHandsVoice from './DogeHandsVoice';
 
 const themeAliases = {
   midnight: 'Midnight', default: 'Midnight', mocha: 'Mocha', brown: 'Mocha',
@@ -333,6 +334,7 @@ export default function DogeAssistant() {
             <div className="min-w-0 flex-1"><div className="font-semibold tracking-wide">Doge Assistant <span className="ml-1 rounded-full bg-emerald-300/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-emerald-200">Control mode</span></div><div className="text-xs text-white/50">DogeUB tools · {status}</div></div>
             <button onClick={() => setOpen(false)} aria-label="Close Doge Assistant" className="rounded-xl p-2 text-white/60 hover:bg-white/10 hover:text-white"><X size={18}/></button>
           </header>
+          <DogeHandsVoice />
           <div className="border-b border-white/10 p-3">
             <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[.16em] text-white/40"><Command size={12}/> Quick actions</div>
             <div className="flex flex-wrap gap-2">
@@ -348,7 +350,7 @@ export default function DogeAssistant() {
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Tell Doge what to do…" aria-label="Message Doge Assistant" className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[.06] px-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/50" />
             <button type="submit" aria-label="Send command" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-300 text-slate-950 transition hover:bg-cyan-200"><Send size={16}/></button>
           </form>
-          <div className="flex items-center justify-center gap-1.5 pb-2 text-[10px] text-white/35"><Settings2 size={11}/> Controls only affect DogeUB in this browser</div>
+          <div className="flex items-center justify-center gap-1.5 pb-2 text-[10px] text-white/35"><Settings2 size={11}/> DogeUB browser tools · Doge Hands requires local consent</div>
         </section>
       )}
       <button onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close Doge Assistant' : 'Open Doge Assistant'} title="Doge Assistant" className="group relative flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/40 bg-[#0c1425] text-cyan-200 shadow-xl shadow-cyan-950/40 transition hover:-translate-y-0.5 hover:border-cyan-100/70 hover:text-white">
